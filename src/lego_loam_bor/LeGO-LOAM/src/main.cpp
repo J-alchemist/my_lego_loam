@@ -17,14 +17,14 @@ int main(int argc, char** argv) {
   std::string lidar_topic;
 
   nh.getParam("rosbag", rosbag);
-  nh.getParam("imu_topic", imu_topic);
-  nh.getParam("lidar_topic", lidar_topic);
+  nh.getParam("imu_topic", imu_topic);    // imu_topic
+  nh.getParam("lidar_topic", lidar_topic);    // lidar_topic
 
   bool use_rosbag = false;
 
   rosbag::Bag bag;
 
-  if (!rosbag.empty()) {
+  if (!rosbag.empty()) {    // 使用bag包
     try {
       bag.open(rosbag, rosbag::bagmode::Read);
       use_rosbag = true;
@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
       return 1;
     }
   }
-
+  // 节点
   Channel<ProjectionOut> projection_out_channel(true);
   Channel<AssociationOut> association_out_channel(use_rosbag);
 
@@ -48,13 +48,12 @@ int main(int argc, char** argv) {
 
   ROS_INFO("\033[1;32m---->\033[0m LeGO-LOAM Started.");
 
-  if( !use_rosbag ){
+  if( !use_rosbag ){      // 实际跑的
     ROS_INFO("SPINNER");
     ros::MultiThreadedSpinner spinner(4);  // Use 4 threads
     spinner.spin();
-  }
-  else{
-    ROS_INFO("ROSBAG");
+  }else{                // 仿真时间
+    ROS_INFO("ROSBAG");         
     std::vector<std::string> topics;
     topics.push_back(imu_topic);
     topics.push_back(lidar_topic);

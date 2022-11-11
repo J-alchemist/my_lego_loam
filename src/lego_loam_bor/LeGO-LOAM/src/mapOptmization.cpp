@@ -1056,11 +1056,21 @@ void MapOptimization::cornerOptimization(int iterCount) {   // 角点优化
         float z2 = cz - 0.1 * matV1(0, 2);
         // ! 计算残差
 #if 0
-        Eigen::Vector3f v0 << x0, y0, z0;
-        Eigen::Vector3f v1 << x1, y1, z1;        
-        Eigen::Vector3f v2 << x2, y2, z2;
-        
+        Eigen::Vector3f v1, v2, v3;
+        Eigen::Vector3f l_abc_;
 
+        v1 << x0-x1, y0-y1, z0-z1;
+        v2 << x0-x2, y0-y2, z0-z2; 
+        v3 << x1-x2, y1-y2, z1-z2;   
+        Eigen::Vector3f temp = v1.cross(v2);   
+        float a012_ = temp.norm();   // 叉乘之后, 平方根
+        float l12_ = v3.norm(); 
+        float ld2_ = a012_ / l12_;
+
+        l_abc_  << temp(1)*(z2-z1) + temp(2)*(y1-y2), 
+                   temp(0)*(z1-z2) + temp(2)*(x2-x1), 
+                   temp(0)*(y2-y1) + temp(1)*(x1-x2); 
+        l_abc_ /= ld2_;
 #endif
 
 
@@ -1201,7 +1211,7 @@ bool MapOptimization::LMOptimization(int iterCount) {
     // !残差对位姿的偏导
     // 残差对位姿的偏导 = 残差对点的偏导关系 * 点对外参的偏导关系, 残差对点的偏导关系前面求得了
     // d(d)/Twl = d(d)/dPw * d(Pw)/d(Twl)
-#if  1    
+#if  0    
     Eigen::Vector3f point;
     Eigen::Vector3f dRp_x,dRp_y,dRp_z;
     Eigen::Matrix3f dRp_xyz;

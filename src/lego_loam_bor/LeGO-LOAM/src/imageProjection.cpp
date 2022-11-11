@@ -244,7 +244,7 @@ void ImageProjection::groundRemoval() {
 
       // TODO: review this change
 
-      if ( (vertical_angle - _sensor_mount_angle) <= 10 * DEG_TO_RAD) {
+      if ( (vertical_angle - _sensor_mount_angle) <= 10 * DEG_TO_RAD) {   // 上下两根线束的角度小于10°,认定为平面
         _ground_mat(i, j) = 1;
         _ground_mat(i + 1, j) = 1;
       }
@@ -346,7 +346,7 @@ void ImageProjection::labelComponents(int row, int col) {
   const Coord2D neighborIterator[4] = {
       {0, -1}, {-1, 0}, {1, 0}, {0, 1}};
 
-  while (queue.size() > 0) {
+  while (queue.size() > 0) {        // 广度搜索
     // Pop point
     Coord2D fromInd = queue.front();
     queue.pop_front();
@@ -374,17 +374,17 @@ void ImageProjection::labelComponents(int row, int col) {
       if (_label_mat(thisIndX, thisIndY) != 0){
         continue;
       }
-
+      //! 计算新的一点(目标的点上下左右)fromInd 与 目标点thisInd的角度差,判断是否突变,没有突变则纳入局部特征中
       float d1 = std::max(_range_mat(fromInd.x(), fromInd.y()),
-                    _range_mat(thisIndX, thisIndY));
+                    _range_mat(thisIndX, thisIndY));    // 远
       float d2 = std::min(_range_mat(fromInd.x(), fromInd.y()),
-                    _range_mat(thisIndX, thisIndY));
+                    _range_mat(thisIndX, thisIndY));    // 近
 
-      float alpha = (iter.x() == 0) ? _ang_resolution_X : _ang_resolution_Y;
-      float tang = (d2 * sin(alpha) / (d1 - d2 * cos(alpha)));
+      float alpha = (iter.x() == 0) ? _ang_resolution_X : _ang_resolution_Y;    // 选择垂直分辨率还是水平分辨率
+      float tang = (d2 * sin(alpha) / (d1 - d2 * cos(alpha)));        //! 计算两个点的角度差
 
-      if (tang > segmentThetaThreshold) {
-        queue.push_back( {thisIndX, thisIndY } );
+      if (tang > segmentThetaThreshold) {   // tan值的比较
+        queue.push_back( {thisIndX, thisIndY } ); 
 
         _label_mat(thisIndX, thisIndY) = _label_count;
         lineCountFlag[thisIndX] = true;
@@ -399,7 +399,7 @@ void ImageProjection::labelComponents(int row, int col) {
   if (all_pushed.size() >= 30){
     feasibleSegment = true;
   }
-  else if (all_pushed.size() >= _segment_valid_point_num) {
+  else if (all_pushed.size() >= _segment_valid_point_num) {     // 最小聚类点数
     int lineCount = 0;
     for (size_t i = 0; i < _vertical_scans; ++i) {
       if (lineCountFlag[i] == true) ++lineCount;
@@ -422,7 +422,7 @@ void ImageProjection::publishClouds() {
   sensor_msgs::PointCloud2 laserCloudTemp;
 
   auto PublishCloud = [&](ros::Publisher& pub,
-                          const pcl::PointCloud<PointType>::Ptr& cloud) {
+                          const pcl::PointCloud<PointType>::Ptr& cloud) {     // 定义了一个lamdam函数
     if (pub.getNumSubscribers() != 0) {
       pcl::toROSMsg(*cloud, laserCloudTemp);
       laserCloudTemp.header.stamp = cloudHeader.stamp;
@@ -447,7 +447,7 @@ void ImageProjection::publishClouds() {
   out.outlier_cloud.reset(new pcl::PointCloud<PointType>());
   out.segmented_cloud.reset(new pcl::PointCloud<PointType>());
 
-  std::swap( out.seg_msg, _seg_msg);
+  std::swap( out.seg_msg, _seg_msg);    // 交换了两个容器的地址
   std::swap(out.outlier_cloud, _outlier_cloud);
   std::swap(out.segmented_cloud, _segmented_cloud);
 

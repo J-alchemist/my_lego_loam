@@ -349,11 +349,6 @@ void FeatureAssociation::adjustDistortion() {
     point.z = segmentedCloud->points[i].x;    // x轴转z轴
     float ori = -atan2(point.x, point.z);
 
-            // point.x = segmentedCloud->points[i].x;
-            // point.y = segmentedCloud->points[i].y;
-            // point.z = segmentedCloud->points[i].z;         
-            // float ori = -atan2(point.y, point.x);   
-
     // 点归到pi-3pi 
     if (!halfPassed) {
       if (ori < segInfo.startOrientation - M_PI / 2)
@@ -1157,34 +1152,22 @@ bool FeatureAssociation::calculateTransformationSurf(int iterCount) {
     PointType pointOri = laserCloudOri->points[i];
     PointType coeff = coeffSel->points[i];
 
-    // float arx =
-    //     (-a1 * pointOri.x + a2 * pointOri.y + a3 * pointOri.z + a4) * coeff.x +
-    //     (a5 * pointOri.x - a6 * pointOri.y + crx * pointOri.z + a7) * coeff.y +
-    //     (a8 * pointOri.x - a9 * pointOri.y - a10 * pointOri.z + a11) * coeff.z;
+    float arx =
+        (-a1 * pointOri.x + a2 * pointOri.y + a3 * pointOri.z + a4) * coeff.x +
+        (a5 * pointOri.x - a6 * pointOri.y + crx * pointOri.z + a7) * coeff.y +
+        (a8 * pointOri.x - a9 * pointOri.y - a10 * pointOri.z + a11) * coeff.z;
 
-    // float arz = (c1 * pointOri.x + c2 * pointOri.y + c3) * coeff.x +
-    //             (c4 * pointOri.x - c5 * pointOri.y + c6) * coeff.y +
-    //             (c7 * pointOri.x + c8 * pointOri.y + c9) * coeff.z;
+    float arz = (c1 * pointOri.x + c2 * pointOri.y + c3) * coeff.x +
+                (c4 * pointOri.x - c5 * pointOri.y + c6) * coeff.y +
+                (c7 * pointOri.x + c8 * pointOri.y + c9) * coeff.z;
 
-    // float aty = -b6 * coeff.x + c4 * coeff.y + b2 * coeff.z;
-
-            float ary = (-a1*pointOri.y + a2*pointOri.z + a3*pointOri.x + a4) * coeff.y
-                      + (a5*pointOri.y - a6*pointOri.z + crx*pointOri.x + a7) * coeff.z
-                      + (a8*pointOri.y - a9*pointOri.z - a10*pointOri.x + a11) * coeff.x;
-            float arx = (c1*pointOri.y + c2*pointOri.z + c3) * coeff.y
-                      + (c4*pointOri.y - c5*pointOri.z + c6) * coeff.z
-                      + (c7*pointOri.y + c8*pointOri.z + c9) * coeff.x;
-            float atz = -b6 * coeff.y + c4 * coeff.z + b2 * coeff.x;
+    float aty = -b6 * coeff.x + c4 * coeff.y + b2 * coeff.z;
 
     float d2 = coeff.intensity; 
 
-    // matA(i, 0) = arx;
-    // matA(i, 1) = arz;
-    // matA(i, 2) = aty;
-
-            matA(i, 0) = ary;
-            matA(i, 1) = arx;
-            matA(i, 2) = atz;
+    matA(i, 0) = arx;
+    matA(i, 1) = arz;
+    matA(i, 2) = aty;
 
     matB(i, 0) = -0.05 * d2;
   }
@@ -1264,45 +1247,33 @@ bool FeatureAssociation::calculateTransformationCorner(int iterCount) {
   float ty = transformCur[4];
   float tz = transformCur[5];
 
-  // float b1 = -crz * sry - cry * srx * srz;
-  // float b2 = cry * crz * srx - sry * srz;
-  // float b3 = crx * cry;
-  // float b4 = tx * -b1 + ty * -b2 + tz * b3;
-  // float b5 = cry * crz - srx * sry * srz;
-  // float b6 = cry * srz + crz * srx * sry;
-  // float b7 = crx * sry;
-  // float b8 = tz * b7 - ty * b6 - tx * b5;
-  // float c5 = crx * srz;
-
-        float b1 = -crx*srz - crz*sry*srx; float b2 = crz*crx*sry - srz*srx; float b3 = cry*crz; float b4 = ty*-b1 + tz*-b2 + tx*b3;
-        float b5 = crz*crx - sry*srz*srx; float b6 = crz*srx + crx*sry*srz; float b7 = cry*srz; float b8 = tx*b7 - tz*b6 - ty*b5;
-        float c5 = cry*srx;
+  float b1 = -crz * sry - cry * srx * srz;
+  float b2 = cry * crz * srx - sry * srz;
+  float b3 = crx * cry;
+  float b4 = tx * -b1 + ty * -b2 + tz * b3;
+  float b5 = cry * crz - srx * sry * srz;
+  float b6 = cry * srz + crz * srx * sry;
+  float b7 = crx * sry;
+  float b8 = tz * b7 - ty * b6 - tx * b5;
+  float c5 = crx * srz;
 
   for (int i = 0; i < pointSelNum; i++) {
     PointType pointOri = laserCloudOri->points[i];
     PointType coeff = coeffSel->points[i];
 
-    // float ary = 
-    //     (b1 * pointOri.x + b2 * pointOri.y - b3 * pointOri.z + b4) * coeff.x +
-    //     (b5 * pointOri.x + b6 * pointOri.y - b7 * pointOri.z + b8) * coeff.z;
+    float ary = 
+        (b1 * pointOri.x + b2 * pointOri.y - b3 * pointOri.z + b4) * coeff.x +
+        (b5 * pointOri.x + b6 * pointOri.y - b7 * pointOri.z + b8) * coeff.z;
 
-    // float atx = -b5 * coeff.x + c5 * coeff.y + b1 * coeff.z;
+    float atx = -b5 * coeff.x + c5 * coeff.y + b1 * coeff.z;
 
-    // float atz = b7 * coeff.x - srx * coeff.y - b3 * coeff.z;
-
-            float arz = (b1*pointOri.y + b2*pointOri.z - b3*pointOri.x + b4) * coeff.y
-                      + (b5*pointOri.y + b6*pointOri.z - b7*pointOri.x + b8) * coeff.x;
-            float aty = -b5 * coeff.y + c5 * coeff.z + b1 * coeff.x;
-            float atx = b7 * coeff.y - srx * coeff.z - b3 * coeff.x;
+    float atz = b7 * coeff.x - srx * coeff.y - b3 * coeff.z;
 
     float d2 = coeff.intensity; 
 
-    // matA(i, 0) = ary;
-    // matA(i, 1) = atx;
-    // matA(i, 2) = atz;
-            matA(i, 0) = arz;   
-            matA(i, 1) = aty;
-            matA(i, 2) = atx;
+    matA(i, 0) = ary;
+    matA(i, 1) = atx;
+    matA(i, 2) = atz;
 
     matB(i, 0) = -0.05 * d2;
   } 
